@@ -1,6 +1,5 @@
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
-EXTERN(stext)
 BASE_ADDRESS = 0x80200000;
 
 SECTIONS
