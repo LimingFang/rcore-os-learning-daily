@@ -9,9 +9,9 @@ use lazy_static::*;
 
 const MAX_APP_NUM: usize = 20;
 const APP_BASE_ADDRESS: usize = 0x8040_0000;
-const APP_MAX_SIZE: usize = 0x20_0000; // 2MB
-const KERNEL_STACK_SIZE: usize = 0x2000; // 8KB
-const USER_STACK_SIZE: usize = 0x2000; // 8KB
+const APP_MAX_SIZE: usize = 2 << 20; // 2MB
+const KERNEL_STACK_SIZE: usize = 8 << 10; // 8KB
+const USER_STACK_SIZE: usize = 8 << 10; // 8KB
 
 #[repr(align(4096))]
 struct KernelStack {
@@ -139,7 +139,7 @@ pub fn run_next_app() -> ! {
         fn __restore(cx_addr: usize);
     }
     unsafe {
-        let mut init_ctx = TrapCtx::init_ctx(APP_BASE_ADDRESS, USER_STACK.get_sp());
+        let init_ctx = TrapCtx::init_ctx(APP_BASE_ADDRESS, USER_STACK.get_sp());
         KERNEL_STACK.push_ctx(init_ctx);
         __restore(KERNEL_STACK.get_sp());
     };

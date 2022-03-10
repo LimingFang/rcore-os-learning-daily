@@ -29,6 +29,7 @@ fn my_panic_handler(info: &PanicInfo) -> ! {
 }
 
 global_asm!(include_str!("entry.asm"));
+global_asm!(include_str!("link_app.asm"));
 
 #[no_mangle]
 pub fn rust_main() -> ! {

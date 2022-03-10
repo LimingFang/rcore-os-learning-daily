@@ -1,7 +1,4 @@
-use riscv::register::{
-    scause::{self, Exception, Trap},
-    sstatus, stval,
-};
+use riscv::register::sstatus;
 
 pub struct TrapCtx {
     pub x: [usize; 32],

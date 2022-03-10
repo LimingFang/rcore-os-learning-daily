@@ -1,3 +1,3 @@
-pub fn sys_exit(exit_st: isize) -> isize {
+pub fn sys_exit(_exit_st: isize) -> isize {
     0
 }
