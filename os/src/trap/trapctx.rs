@@ -1,0 +1,29 @@
+use riscv::register::{
+    scause::{self, Exception, Trap},
+    sstatus, stval,
+};
+
+pub struct TrapCtx {
+    pub x: [usize; 32],
+    pub sstatus: sstatus::Sstatus,
+    pub sepc: usize,
+}
+
+impl TrapCtx {
+    pub fn set_sp(&mut self, sp: usize) {
+        self.x[2] = sp
+    }
+    pub fn init_ctx(entry: usize, sp: usize) -> TrapCtx {
+        // SPP：发生异常前的权限模式，设置为 User
+        // sepc:entry
+        let mut st = sstatus::read();
+        st.set_spp(sstatus::SPP::User);
+        let mut ctx = TrapCtx {
+            x: [0; 32],
+            sstatus: st,
+            sepc: entry,
+        };
+        ctx.set_sp(sp);
+        ctx
+    }
+}

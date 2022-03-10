@@ -1,0 +1,22 @@
+use self::{fs::sys_write, process::sys_exit};
+
+mod fs;
+mod process;
+
+use core::slice;
+
+const SYSCALL_WRITE: usize = 64;
+const SYSCALL_EXIT: usize = 93;
+
+fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
+    match syscall_id {
+        SYSCALL_WRITE => {
+            let buf = unsafe { slice::from_raw_parts(args[1] as *const u8, args[2]) };
+            sys_write(args[0], buf)
+        }
+        SYSCALL_EXIT => sys_exit(args[0] as isize),
+        _ => {
+            panic!("syscall_id {} isn't supported now", syscall_id);
+        }
+    }
+}

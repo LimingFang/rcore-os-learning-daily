@@ -4,8 +4,12 @@
 use core::arch::global_asm;
 use core::panic::PanicInfo;
 
+#[macro_use]
 mod console;
+mod batch;
 mod sbi;
+mod syscall;
+mod trap;
 
 use sbi::shutdown;
 
@@ -30,6 +34,9 @@ global_asm!(include_str!("entry.asm"));
 pub fn rust_main() -> ! {
     clear_bss();
     println!("Hello, world!");
+    trap::init();
+    batch::init();
+    batch::run_next_app();
     panic!("Shutdown!!!")
 }
 
