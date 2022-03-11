@@ -3,9 +3,11 @@ use core::arch::global_asm;
 use riscv::register::{mtvec::TrapMode, stvec};
 use riscv::register::{
     scause::{self, Exception, Trap},
-    sstatus, stval,
+    stval,
 };
 pub use trapctx::TrapCtx;
+
+use crate::syscall::syscall;
 
 pub fn init() {
     extern "C" {
@@ -25,7 +27,7 @@ pub fn trap_handler(cx: &mut TrapCtx) -> &mut TrapCtx {
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
             cx.sepc += 4;
-            // 调用 syscall
+            cx.x[10] = syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
         }
         _ => {
             panic!("Unsupport trap {:?},stval = {:?}", scause.cause(), stval)

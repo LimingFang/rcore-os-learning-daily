@@ -1,3 +1,4 @@
+use crate::sync::UPRefCell;
 use crate::trap::TrapCtx;
 #[allow(dead_code)]
 use core::{
@@ -58,46 +59,28 @@ pub struct AppManager {
 impl AppManager {
     unsafe fn load_next_app(&mut self) {
         // 镜像代码拷贝到APP_BASE_ADDRESS
-        let mut app_manager = APP_MANAGER.exclusive_access();
-        app_manager.current_app += 1;
-        if app_manager.current_app >= app_manager.num_app {
+        if self.current_app >= self.num_app {
             panic!("no more app");
         }
-        println!("[kernel]:loading app_{}", app_manager.current_app);
+        println!("[kernel]:loading app_{}", self.current_app);
         asm!("fence.i");
         (APP_BASE_ADDRESS..(APP_BASE_ADDRESS + APP_MAX_SIZE)).for_each(|addr| unsafe {
             (addr as *mut u8).write_volatile(0);
         });
-        let app_start = app_manager.app_start_addr[app_manager.current_app];
-        let app_end = app_manager.app_start_addr[app_manager.current_app + 1];
+        let app_start = self.app_start_addr[self.current_app];
+        let app_end = self.app_start_addr[self.current_app + 1];
         let app_length = app_end - app_start;
         let app_bytes_src = slice::from_raw_parts(app_start as *const u8, app_length);
         let app_bytes_dst = slice::from_raw_parts_mut(APP_BASE_ADDRESS as *mut u8, app_length);
-
+        println!("app_start = {:X},app_end = {:x}", app_start, app_end);
         app_bytes_dst.copy_from_slice(app_bytes_src);
-    }
-}
-
-pub struct UPAppManager {
-    ref_cell: RefCell<AppManager>,
-}
-
-unsafe impl Sync for UPAppManager {}
-impl UPAppManager {
-    unsafe fn new(app_manager: AppManager) -> Self {
-        Self {
-            ref_cell: RefCell::new(app_manager),
-        }
-    }
-
-    fn exclusive_access(&self) -> RefMut<'_, AppManager> {
-        self.ref_cell.borrow_mut()
+        self.current_app += 1;
     }
 }
 
 lazy_static! {
-    static ref APP_MANAGER: UPAppManager = unsafe {
-        UPAppManager::new({
+    static ref APP_MANAGER: UPRefCell<AppManager> = unsafe {
+        UPRefCell::new({
             extern "C" {
                 fn _num_app();
             }
@@ -105,7 +88,7 @@ lazy_static! {
             let num_app = num_app_ptr.read_volatile();
             let app_start_raw = slice::from_raw_parts(num_app_ptr.add(1), num_app + 1);
             let mut app_start = [0; MAX_APP_NUM + 1];
-            app_start[0..=MAX_APP_NUM].copy_from_slice(app_start_raw);
+            app_start[0..=num_app].copy_from_slice(app_start_raw);
             AppManager {
                 num_app,
                 current_app: 0,
@@ -129,12 +112,11 @@ pub fn init() {
 }
 
 pub fn run_next_app() -> ! {
-    {
-        let mut app_manager = APP_MANAGER.exclusive_access();
-        unsafe {
-            app_manager.load_next_app();
-        }
+    let mut app_manager = APP_MANAGER.exclusive_access();
+    unsafe {
+        app_manager.load_next_app();
     }
+    drop(app_manager);
     extern "C" {
         fn __restore(cx_addr: usize);
     }

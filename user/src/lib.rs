@@ -1,9 +1,9 @@
 #![no_std]
-#![no_main]
 #![feature(linkage)]
 #![feature(panic_info_message)]
 
-mod console;
+#[macro_use]
+pub mod console;
 mod syscall;
 use core::panic::PanicInfo;
 use syscall::*;

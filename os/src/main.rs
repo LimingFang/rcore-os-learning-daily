@@ -8,6 +8,7 @@ use core::panic::PanicInfo;
 mod console;
 mod batch;
 mod sbi;
+mod sync;
 mod syscall;
 mod trap;
 

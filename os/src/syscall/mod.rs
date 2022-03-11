@@ -8,7 +8,7 @@ use core::slice;
 const SYSCALL_WRITE: usize = 64;
 const SYSCALL_EXIT: usize = 93;
 
-fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
+pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
     match syscall_id {
         SYSCALL_WRITE => {
             let buf = unsafe { slice::from_raw_parts(args[1] as *const u8, args[2]) };
