@@ -6,7 +6,7 @@
     sd x\n, \n*8(sp)
   .endm
   .macro RESTORE_GP n
-  ld x\n,\n*8(sp)
+    ld x\n,\n*8(sp)
   .endm  
 .section .text  
 __alltraps:
@@ -16,7 +16,7 @@ __alltraps:
   # 此时sp存内核栈指针，sscratch存用户栈指针
   sd x1, 1*8(sp)
   .set n,3
-  .rept 27
+  .rept 29
     SAVE_GP %n
     .set n,n+1
   .endr 
@@ -39,8 +39,9 @@ __restore:
   # 先恢复 csr
   ld t0,32*8(sp)
   ld t1,33*8(sp)
-  csrrw t0,sepc,t0
-  csrrw t1,sstatus,t1
+  ld t2, 2*8(sp)
+  csrrw t0,sstatus,t0
+  csrrw t1,sepc,t1
   csrrw t2,sscratch,t2
   # 在恢复除了 x2(sp) 外的GP
   ld x1,1*8(sp)

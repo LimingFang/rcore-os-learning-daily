@@ -4,7 +4,7 @@ const SYSCALL_EXIT: usize = 93;
 const SYSCALL_WRITE: usize = 64;
 
 fn sys_call(syscall_id: usize, arg0: usize, arg1: usize, arg2: usize) -> isize {
-    let ret;
+    let mut ret;
     unsafe {
         asm!("ecall", inlateout("x10") arg0 => ret,in("x11") arg1,in("x12") arg2,in("x17") syscall_id);
     }
@@ -12,7 +12,7 @@ fn sys_call(syscall_id: usize, arg0: usize, arg1: usize, arg2: usize) -> isize {
 }
 
 pub fn exit(status: isize) {
-    sys_call(SYSCALL_EXIT, 0, 0, 0);
+    sys_call(SYSCALL_EXIT, status as usize, 0, 0);
 }
 
 pub fn write(fd: usize, buffer: &[u8]) -> isize {

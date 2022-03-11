@@ -1,5 +1,6 @@
 use riscv::register::sstatus;
 
+#[repr(C)]
 pub struct TrapCtx {
     pub x: [usize; 32],
     pub sstatus: sstatus::Sstatus,
@@ -8,14 +9,14 @@ pub struct TrapCtx {
 
 impl TrapCtx {
     pub fn set_sp(&mut self, sp: usize) {
-        self.x[2] = sp
+        self.x[2] = sp;
     }
-    pub fn init_ctx(entry: usize, sp: usize) -> TrapCtx {
+    pub fn init_ctx(entry: usize, sp: usize) -> Self {
         // SPP：发生异常前的权限模式，设置为 User
         // sepc:entry
         let mut st = sstatus::read();
         st.set_spp(sstatus::SPP::User);
-        let mut ctx = TrapCtx {
+        let mut ctx = Self {
             x: [0; 32],
             sstatus: st,
             sepc: entry,

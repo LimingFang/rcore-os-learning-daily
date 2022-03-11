@@ -5,7 +5,7 @@ struct Stdout;
 
 impl Write for Stdout {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        write(0, s.as_bytes());
+        write(1, s.as_bytes());
         Ok(())
     }
 }
