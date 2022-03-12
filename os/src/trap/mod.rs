@@ -7,6 +7,7 @@ use riscv::register::{
 };
 pub use trapctx::TrapCtx;
 
+use crate::batch::{run_next_app, APP_MANAGER};
 use crate::syscall::syscall;
 
 pub fn init() {
@@ -28,6 +29,22 @@ pub fn trap_handler(cx: &mut TrapCtx) -> &mut TrapCtx {
         Trap::Exception(Exception::UserEnvCall) => {
             cx.sepc += 4;
             cx.x[10] = syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
+        }
+        Trap::Exception(Exception::IllegalInstruction) => {
+            println!("trap {:?},stval = {:?}", scause.cause(), stval);
+            {
+                let mut app_manager = APP_MANAGER.exclusive_access();
+                app_manager.move_to_next_app();
+            }
+            run_next_app();
+        }
+        Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::LoadFault) => {
+            println!("trap {:?},stval = {:?}", scause.cause(), stval);
+            {
+                let mut app_manager = APP_MANAGER.exclusive_access();
+                app_manager.move_to_next_app();
+            }
+            run_next_app();
         }
         _ => {
             panic!("Unsupport trap {:?},stval = {:?}", scause.cause(), stval)
