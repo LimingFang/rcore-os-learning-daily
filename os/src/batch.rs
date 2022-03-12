@@ -5,10 +5,10 @@ use core::{arch::asm, slice};
 use lazy_static::*;
 
 const MAX_APP_NUM: usize = 20;
-const APP_BASE_ADDRESS: usize = 0x8040_0000;
+pub const APP_BASE_ADDRESS: usize = 0x8040_0000;
 const APP_MAX_SIZE: usize = 2 << 20; // 2MB
-const KERNEL_STACK_SIZE: usize = 1 << 10; // 8KB
-const USER_STACK_SIZE: usize = 1 << 10; // 8KB
+const KERNEL_STACK_SIZE: usize = 4 << 10; // 8KB
+const USER_STACK_SIZE: usize = 4 << 10; // 8KB
 
 #[repr(align(4096))]
 struct KernelStack {
@@ -69,12 +69,33 @@ impl AppManager {
         let app_bytes_src = slice::from_raw_parts(app_start as *const u8, app_length);
         let app_bytes_dst = slice::from_raw_parts_mut(APP_BASE_ADDRESS as *mut u8, app_length);
         app_bytes_dst.copy_from_slice(app_bytes_src);
+    }
+
+    pub fn move_to_next_app(&mut self) {
         self.current_app += 1;
+    }
+
+    pub fn get_current_app(&self) -> usize {
+        self.current_app
+    }
+
+    pub fn get_app_start(&self, idx: usize) -> usize {
+        if idx >= self.num_app {
+            panic!("idx={} >= num_app{}", idx, self.num_app);
+        }
+        self.app_start_addr[idx]
+    }
+
+    pub fn get_app_len(&self, idx: usize) -> usize {
+        if idx >= self.num_app {
+            panic!("idx={} >= num_app{}", idx, self.num_app);
+        }
+        self.app_start_addr[idx + 1] - self.app_start_addr[idx]
     }
 }
 
 lazy_static! {
-    static ref APP_MANAGER: UPRefCell<AppManager> = unsafe {
+    pub static ref APP_MANAGER: UPRefCell<AppManager> = unsafe {
         UPRefCell::new({
             extern "C" {
                 fn _num_app();

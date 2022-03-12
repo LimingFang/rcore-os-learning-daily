@@ -3,8 +3,6 @@ use self::{fs::sys_write, process::sys_exit};
 mod fs;
 mod process;
 
-use core::slice;
-
 const SYSCALL_WRITE: usize = 64;
 const SYSCALL_EXIT: usize = 93;
 

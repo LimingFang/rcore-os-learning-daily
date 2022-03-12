@@ -1,8 +1,22 @@
+use crate::batch::{APP_BASE_ADDRESS, APP_MANAGER};
 use core::{slice, str};
-#[allow(unused)]
+
+// 检查字节范围
 pub fn sys_write(_fd: usize, buf: *const u8, len: usize) -> isize {
+    let buf_lower = buf as usize;
+    let app_manager = APP_MANAGER.exclusive_access();
+    let prog_lower = APP_BASE_ADDRESS;
+    let prog_upper = APP_BASE_ADDRESS + app_manager.get_app_len(app_manager.get_current_app());
+    drop(app_manager);
+    println!(
+        "buf_lower={:x},prog_upper={:x},prog_lower={:x},len={:x}",
+        buf_lower, prog_upper, prog_lower, len
+    );
+    if buf_lower < prog_lower || (buf_lower + len) >= prog_upper {
+        return -1;
+    }
     let slice = unsafe { slice::from_raw_parts(buf, len) };
     let str = str::from_utf8(slice).unwrap();
-    println!("{}", str);
-    0
+    print!("{}", str);
+    str.len() as isize
 }

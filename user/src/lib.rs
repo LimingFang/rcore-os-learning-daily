@@ -6,7 +6,7 @@
 pub mod console;
 mod syscall;
 use core::panic::PanicInfo;
-use syscall::*;
+pub use syscall::*;
 
 #[panic_handler]
 fn my_panic_handler(info: &PanicInfo) -> ! {
