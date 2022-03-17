@@ -1,4 +1,6 @@
-use crate::batch::{APP_BASE_ADDRESS, APP_MANAGER};
+use crate::config::APP_BASE_ADDRESS;
+use crate::loader::get_app_len;
+use crate::task::APP_MANAGER;
 use core::{slice, str};
 
 // 检查字节范围
@@ -6,7 +8,7 @@ pub fn sys_write(_fd: usize, buf: *const u8, len: usize) -> isize {
     let buf_lower = buf as usize;
     let app_manager = APP_MANAGER.exclusive_access();
     let prog_lower = APP_BASE_ADDRESS;
-    let prog_upper = APP_BASE_ADDRESS + app_manager.get_app_len(app_manager.get_current_app());
+    let prog_upper = APP_BASE_ADDRESS + get_app_len(app_manager.get_current_app());
     drop(app_manager);
     println!(
         "buf_lower={:x},prog_upper={:x},prog_lower={:x},len={:x}",

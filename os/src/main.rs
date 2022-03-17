@@ -6,10 +6,12 @@ use core::panic::PanicInfo;
 
 #[macro_use]
 mod console;
-mod batch;
+mod config;
+mod loader;
 mod sbi;
 mod sync;
 mod syscall;
+mod task;
 mod trap;
 
 use sbi::shutdown;
@@ -37,8 +39,8 @@ pub fn rust_main() -> ! {
     clear_bss();
     println!("Hello, world!");
     trap::init();
-    batch::init();
-    batch::run_next_app();
+    loader::load_all_apps();
+    task::run_next_app();
     panic!("Shutdown!!!")
 }
 

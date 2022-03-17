@@ -1,4 +1,4 @@
-use crate::batch::{run_next_app, APP_MANAGER};
+use crate::task::{run_next_app, APP_MANAGER};
 
 pub fn sys_exit(exit_st: isize) -> isize {
     println!("[kernel] application exited with code {}", exit_st);

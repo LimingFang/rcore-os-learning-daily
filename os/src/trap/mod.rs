@@ -1,4 +1,6 @@
 mod trapctx;
+use crate::config::*;
+use crate::task::{run_next_app, APP_MANAGER};
 use core::arch::global_asm;
 use riscv::register::{mtvec::TrapMode, stvec};
 use riscv::register::{
@@ -7,7 +9,6 @@ use riscv::register::{
 };
 pub use trapctx::TrapCtx;
 
-use crate::batch::{run_next_app, APP_MANAGER};
 use crate::syscall::syscall;
 
 pub fn init() {
