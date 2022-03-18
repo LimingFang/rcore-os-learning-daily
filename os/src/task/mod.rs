@@ -1,6 +1,5 @@
 use crate::loader::*;
 use crate::sync::UPRefCell;
-use crate::trap::TrapCtx;
 use lazy_static::*;
 mod task;
 
@@ -31,7 +30,7 @@ lazy_static! {
 }
 
 pub fn run_next_app() -> ! {
-    let mut app_manager = APP_MANAGER.exclusive_access();
+    let app_manager = APP_MANAGER.exclusive_access();
     let current_app = app_manager.get_current_app();
     drop(app_manager);
     init_app_ctx(current_app);

@@ -10,10 +10,6 @@ pub fn sys_write(_fd: usize, buf: *const u8, len: usize) -> isize {
     let prog_lower = APP_BASE_ADDRESS;
     let prog_upper = APP_BASE_ADDRESS + get_app_len(app_manager.get_current_app());
     drop(app_manager);
-    println!(
-        "buf_lower={:x},prog_upper={:x},prog_lower={:x},len={:x}",
-        buf_lower, prog_upper, prog_lower, len
-    );
     if buf_lower < prog_lower || (buf_lower + len) >= prog_upper {
         return -1;
     }

@@ -8,18 +8,18 @@ pub fn load_all_apps() -> usize {
         fn _num_app();
     }
     unsafe {
-        let app_num = _num_app as *const usize as usize;
+        let app_num = *(_num_app as *const usize);
         let app_start_ptr = (_num_app as *const usize).add(1);
         let app_ptr = from_raw_parts(app_start_ptr, app_num + 1);
         println!("[kernel]:num_app = {}", app_num);
         // zero memory
-        (APP_BASE_ADDRESS..((app_ptr.len() + 1) * APP_MAX_SIZE)).for_each(|byte| unsafe {
+        (APP_BASE_ADDRESS..((app_ptr.len() + 1) * APP_MAX_SIZE)).for_each(|byte| {
             (byte as *mut u8).write_volatile(0);
         });
         // copy prog instructions.
         for i in 0..app_num {
             let app_len = app_ptr[i + 1] - app_ptr[i];
-            let mut target_slice = from_raw_parts_mut(get_app_start(i) as *mut u8, app_len);
+            let target_slice = from_raw_parts_mut(get_app_start(i) as *mut u8, app_len);
             let src_slice = from_raw_parts(app_ptr[i] as *const u8, app_len);
             target_slice.copy_from_slice(src_slice);
         }
