@@ -18,7 +18,7 @@ fn insert_or_update() -> Result<()> {
     // 1.生成asm文件
     let mut f = File::create(ASM_FILE_NAME).unwrap();
     // 2.列举bin文件名字
-    let apps: Vec<String> = read_dir("../user/src/bin")
+    let mut apps: Vec<String> = read_dir("../user/src/bin")
         .unwrap()
         .into_iter()
         .map(|entry| {
@@ -27,6 +27,7 @@ fn insert_or_update() -> Result<()> {
             entry
         })
         .collect();
+    apps.sort();
     // 3.向文件写数据
     writeln!(
         &mut f,

@@ -39,7 +39,9 @@ pub fn rust_main() -> ! {
     clear_bss();
     println!("Hello, world!");
     trap::init();
+    println!("trap mod init");
     loader::load_all_apps();
+    println!("load_all_apps");
     task::run_next_app();
     panic!("Shutdown!!!")
 }

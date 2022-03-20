@@ -1,5 +1,4 @@
 mod trapctx;
-use crate::config::*;
 use crate::task::{run_next_app, APP_MANAGER};
 use core::arch::global_asm;
 use riscv::register::{mtvec::TrapMode, stvec};
@@ -32,7 +31,7 @@ pub fn trap_handler(cx: &mut TrapCtx) -> &mut TrapCtx {
             cx.x[10] = syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
         }
         Trap::Exception(Exception::IllegalInstruction) => {
-            println!("trap {:?},stval = {:?}", scause.cause(), stval);
+            println!("trap {:?},stval = 0x{:x}", scause.cause(), stval);
             {
                 let mut app_manager = APP_MANAGER.exclusive_access();
                 app_manager.move_to_next_app();
@@ -40,7 +39,7 @@ pub fn trap_handler(cx: &mut TrapCtx) -> &mut TrapCtx {
             run_next_app();
         }
         Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::LoadFault) => {
-            println!("trap {:?},stval = {:?}", scause.cause(), stval);
+            println!("trap {:?},stval = 0x{:x}", scause.cause(), stval);
             {
                 let mut app_manager = APP_MANAGER.exclusive_access();
                 app_manager.move_to_next_app();
@@ -48,7 +47,7 @@ pub fn trap_handler(cx: &mut TrapCtx) -> &mut TrapCtx {
             run_next_app();
         }
         _ => {
-            panic!("Unsupport trap {:?},stval = {:?}", scause.cause(), stval)
+            panic!("Unsupport trap {:?},stval = 0x{:x}", scause.cause(), stval)
         }
     }
     cx

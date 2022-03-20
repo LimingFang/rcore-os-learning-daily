@@ -1,7 +1,7 @@
 # 期望功能: run 利用qemu运行
 # debug 开启qemu debug模式
 TARGET := riscv64gc-unknown-none-elf
-MODE := release
+MODE := debug
 KERNEL_ENTRY_PA := 0x80200000
 KERNEL_ELF := target/$(TARGET)/$(MODE)/os
 KERNEL_BIN := $(KERNEL_ELF).bin
@@ -12,7 +12,11 @@ OBJCOPY := rust-objcopy --binary-architecture=riscv64
 
 kernel:
 	@cd ../user && make build
+ifeq ($(MODE),debug)
+	@cargo build 
+else
 	@cargo build --release
+endif
 	@$(OBJCOPY) $(KERNEL_ELF) --strip-all -O binary $(KERNEL_BIN)
 
 run: kernel
