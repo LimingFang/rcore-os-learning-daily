@@ -1,7 +1,11 @@
 use crate::loader::{get_app_num, init_app_ctx};
 use crate::sync::UPRefCell;
 use lazy_static::*;
+mod context;
+mod switch;
 mod task;
+
+pub use context::TaskContext;
 
 pub struct AppManager {
     num_app: usize,
