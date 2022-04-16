@@ -2,6 +2,7 @@ use core::arch::asm;
 
 const SYSCALL_EXIT: usize = 93;
 const SYSCALL_WRITE: usize = 64;
+const SYSCALL_YIELD: usize = 124;
 
 fn sys_call(syscall_id: usize, arg0: usize, arg1: usize, arg2: usize) -> isize {
     let mut ret;
@@ -17,4 +18,8 @@ pub fn exit(status: isize) {
 
 pub fn write(fd: usize, buffer: &[u8]) -> isize {
     sys_call(SYSCALL_WRITE, fd, buffer.as_ptr() as usize, buffer.len())
+}
+
+pub fn yield_() {
+    sys_call(SYSCALL_YIELD, 0, 0, 0);
 }

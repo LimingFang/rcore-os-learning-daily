@@ -11,6 +11,9 @@ impl TrapCtx {
     pub fn set_sp(&mut self, sp: usize) {
         self.x[2] = sp;
     }
+
+    // 初始化 TrapCtx，通过 __restore 可以跳转至相应用户程序
+    // 运行。
     pub fn init_ctx(entry: usize, sp: usize) -> Self {
         // SPP：发生异常前的权限模式，设置为 User
         // sepc:entry

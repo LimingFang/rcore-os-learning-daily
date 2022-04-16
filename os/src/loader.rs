@@ -64,12 +64,13 @@ struct UserStack {
     stack: [u8; USER_STACK_SIZE],
 }
 
-static KERNEL_STACK: KernelStack = KernelStack {
+static KERNEL_STACK: [KernelStack; MAX_APP_NUM] = [KernelStack {
     stack: [0; KERNEL_STACK_SIZE],
-};
-static USER_STACK: UserStack = UserStack {
+}; MAX_APP_NUM];
+
+static USER_STACK: [UserStack; MAX_APP_NUM] = [UserStack {
     stack: [0; USER_STACK_SIZE],
-};
+}; MAX_APP_NUM];
 
 impl UserStack {
     pub fn get_sp(&self) -> usize {
@@ -90,11 +91,11 @@ impl KernelStack {
     }
 }
 
-// 在 kernel 上初始化 app 上下文，返回内核栈指针
+// 在相应内核栈上初始化 app 上下文，返回内核栈指针
 pub fn init_app_ctx(idx: usize) -> usize {
     let app_start = get_app_start(idx);
-    println!("[kernel]:app_start=0x{:x}", app_start);
-    let user_sp = USER_STACK.get_sp();
-    let ptr = KERNEL_STACK.push_ctx(TrapCtx::init_ctx(app_start, user_sp)) as *const _ as usize;
+    let user_sp = USER_STACK[idx].get_sp();
+    let ptr =
+        KERNEL_STACK[idx].push_ctx(TrapCtx::init_ctx(app_start, user_sp)) as *const _ as usize;
     ptr
 }
