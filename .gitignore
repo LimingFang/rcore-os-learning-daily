@@ -2,3 +2,4 @@
 target/
 exe/
 os/build/
+os/.gdb_history

@@ -16,6 +16,8 @@ mod trap;
 
 use sbi::shutdown;
 
+use crate::task::run_first_task;
+
 #[panic_handler]
 fn my_panic_handler(info: &PanicInfo) -> ! {
     if let Some(location) = info.location() {
@@ -42,7 +44,7 @@ pub fn rust_main() -> ! {
     println!("trap mod init");
     loader::load_all_apps();
     println!("load_all_apps");
-    task::run_next_app();
+    run_first_task();
     panic!("Shutdown!!!")
 }
 

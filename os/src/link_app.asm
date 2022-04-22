@@ -3,11 +3,12 @@
     .section .data
     .align 3
 _num_app:
-    .quad 3
+    .quad 4
    .quad app_0_start
    .quad app_1_start
    .quad app_2_start
-   .quad app_2_end
+   .quad app_3_start
+   .quad app_3_end
 
         .section .data
         .global app_0_start
@@ -20,12 +21,19 @@ _num_app:
         .global app_1_start
         .global app_1_end
       app_1_start:
-        .incbin "../user/target/riscv64gc-unknown-none-elf/release/01multiprogramming_write_a.bin"
+        .incbin "../user/target/riscv64gc-unknown-none-elf/release/02power.bin"
       app_1_end:
 
         .section .data
         .global app_2_start
         .global app_2_end
       app_2_start:
-        .incbin "../user/target/riscv64gc-unknown-none-elf/release/02power.bin"
+        .incbin "../user/target/riscv64gc-unknown-none-elf/release/90multiprogramming_write_a.bin"
       app_2_end:
+
+        .section .data
+        .global app_3_start
+        .global app_3_end
+      app_3_start:
+        .incbin "../user/target/riscv64gc-unknown-none-elf/release/91multiprogramming_b.bin"
+      app_3_end:

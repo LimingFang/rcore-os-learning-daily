@@ -1,7 +1,7 @@
 # 期望功能: run 利用qemu运行
 # debug 开启qemu debug模式
 TARGET := riscv64gc-unknown-none-elf
-MODE := debug
+MODE := release
 KERNEL_ENTRY_PA := 0x80200000
 KERNEL_ELF := target/$(TARGET)/$(MODE)/os
 KERNEL_BIN := $(KERNEL_ELF).bin

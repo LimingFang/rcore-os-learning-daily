@@ -7,10 +7,8 @@ mod switch;
 mod task;
 
 pub use context::TaskContext;
-
+use switch::__switch;
 use task::{TaskControlBlk, TaskStatus};
-
-use self::switch::__switch;
 
 pub struct TaskManager {
     num_app: usize,
@@ -24,9 +22,9 @@ pub struct TaskManagerInner {
 
 impl TaskManager {
     pub fn run_first_task(&self) {
-        let inner_mgr = self.task_mgr_inner.exclusive_access();
+        let mut inner_mgr = self.task_mgr_inner.exclusive_access();
         let first_task = inner_mgr.tasks[0];
-        let current_task = TaskContext::Init();
+        let mut current_task = TaskContext::init();
         inner_mgr.tasks[0].st = TaskStatus::Running;
         drop(inner_mgr);
         unsafe {
@@ -42,17 +40,15 @@ impl TaskManager {
     // 切换到下一个 Ready task，某个时刻有可能会跳转回来继续运行
     pub fn run_next_task(&self) {
         if let Some(next_task_id) = self.find_next_task() {
-            let inner_mgr = self.task_mgr_inner.exclusive_access();
-            let tasks = &inner_mgr.tasks;
-            let current_task = tasks[inner_mgr.current_task];
-            let next_task = tasks[next_task_id];
-            next_task.st = TaskStatus::Running;
+            let mut inner_mgr = self.task_mgr_inner.exclusive_access();
+            let current_task_id = inner_mgr.current_task;
+            inner_mgr.current_task = next_task_id;
+            inner_mgr.tasks[next_task_id].st = TaskStatus::Running;
+            let current_task = &mut inner_mgr.tasks[current_task_id].ctx as *mut TaskContext;
+            let next_task = &inner_mgr.tasks[next_task_id].ctx as *const TaskContext;
             drop(inner_mgr);
             unsafe {
-                __switch(
-                    &mut current_task.ctx as *mut TaskContext,
-                    &next_task.ctx as *const TaskContext,
-                );
+                __switch(current_task, next_task);
             }
         } else {
             panic!("All task finished");
@@ -60,18 +56,21 @@ impl TaskManager {
     }
 
     pub fn mark_current_running(&self) {
-        let inner_mgr = self.task_mgr_inner.exclusive_access();
-        inner_mgr.tasks[inner_mgr.current_task].st = TaskStatus::Running;
+        let mut inner_mgr = self.task_mgr_inner.exclusive_access();
+        let current_task = inner_mgr.current_task;
+        inner_mgr.tasks[current_task].st = TaskStatus::Running;
     }
 
     pub fn mark_current_suspend(&self) {
-        let inner_mgr = self.task_mgr_inner.exclusive_access();
-        inner_mgr.tasks[inner_mgr.current_task].st = TaskStatus::Ready;
+        let mut inner_mgr = self.task_mgr_inner.exclusive_access();
+        let current_task = inner_mgr.current_task;
+        inner_mgr.tasks[current_task].st = TaskStatus::Ready;
     }
 
-    pub fn mark_current_stoped(self) {
-        let inner_mgr = self.task_mgr_inner.exclusive_access();
-        inner_mgr.tasks[inner_mgr.current_task].st = TaskStatus::Exit;
+    pub fn mark_current_stoped(&self) {
+        let mut inner_mgr = self.task_mgr_inner.exclusive_access();
+        let current_task = inner_mgr.current_task;
+        inner_mgr.tasks[current_task].st = TaskStatus::Exit;
     }
 
     // 遍历 tasks，返回 Ready 状态的 task
@@ -90,12 +89,16 @@ lazy_static! {
         TaskManager {
             num_app: get_app_num(),
             task_mgr_inner: UPRefCell::new({
-                let task_mgr_inner = TaskManagerInner {
-                    tasks: [TaskControlBlk::Init(); MAX_APP_NUM],
+                let mut task_mgr_inner = TaskManagerInner {
+                    tasks: [TaskControlBlk::init(); MAX_APP_NUM],
                     current_task: 0,
                 };
                 for i in 0..MAX_APP_NUM {
-                    task_mgr_inner.tasks[i].st = TaskStatus::Ready;
+                    task_mgr_inner.tasks[i].st = if i < get_app_num() {
+                        TaskStatus::Ready
+                    } else {
+                        TaskStatus::Exit
+                    };
                     task_mgr_inner.tasks[i].ctx = TaskContext::restore_task_ctx(init_app_ctx(i));
                 }
                 task_mgr_inner

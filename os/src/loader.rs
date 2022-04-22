@@ -55,11 +55,13 @@ pub fn get_app_num() -> usize {
 }
 
 #[repr(align(4096))]
+#[derive(Clone, Copy)]
 struct KernelStack {
     stack: [u8; KERNEL_STACK_SIZE],
 }
 
 #[repr(align(4096))]
+#[derive(Clone, Copy)]
 struct UserStack {
     stack: [u8; USER_STACK_SIZE],
 }
@@ -82,12 +84,12 @@ impl KernelStack {
     pub fn get_sp(&self) -> usize {
         self.stack.as_ptr() as usize + KERNEL_STACK_SIZE
     }
-    pub fn push_ctx(&self, ctx: TrapCtx) -> &'static mut TrapCtx {
+    pub fn push_ctx(&self, ctx: TrapCtx) -> usize {
         let ctx_ptr = (self.get_sp() - core::mem::size_of::<TrapCtx>()) as *mut TrapCtx;
         unsafe {
             *ctx_ptr = ctx;
-            ctx_ptr.as_mut().unwrap()
         }
+        ctx_ptr as usize
     }
 }
 
@@ -95,7 +97,13 @@ impl KernelStack {
 pub fn init_app_ctx(idx: usize) -> usize {
     let app_start = get_app_start(idx);
     let user_sp = USER_STACK[idx].get_sp();
-    let ptr =
-        KERNEL_STACK[idx].push_ctx(TrapCtx::init_ctx(app_start, user_sp)) as *const _ as usize;
-    ptr
+    // println!(
+    //     "USER_STACK address is {}",
+    //     USER_STACK[0].stack.as_ptr() as usize
+    // );
+    // println!(
+    //     "KERNEL_STACK address is {}",
+    //     KERNEL_STACK[0].stack.as_ptr() as usize
+    // );
+    KERNEL_STACK[idx].push_ctx(TrapCtx::init_ctx(app_start, user_sp))
 }

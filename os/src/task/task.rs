@@ -1,20 +1,21 @@
 use super::TaskContext;
 
+#[derive(Clone, Copy, Debug)]
 pub struct TaskControlBlk {
     pub ctx: TaskContext,
     pub st: TaskStatus,
 }
 
 impl TaskControlBlk {
-    pub fn Init() -> Self {
+    pub fn init() -> Self {
         TaskControlBlk {
-            ctx: TaskContext::Init(),
+            ctx: TaskContext::init(),
             st: TaskStatus::UnInit,
         }
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum TaskStatus {
     UnInit,
     Ready,

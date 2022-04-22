@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Clone, Copy, Debug)]
 #[repr(C)]
 // 和 C 一致的布局
 pub struct TaskContext {
@@ -8,7 +8,7 @@ pub struct TaskContext {
 }
 
 impl TaskContext {
-    pub fn Init() -> Self {
+    pub fn init() -> Self {
         TaskContext {
             ra: 0,
             sp: 0,

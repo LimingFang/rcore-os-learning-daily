@@ -1,4 +1,4 @@
-use crate::task::{mark_current_stop, run_next_task};
+use crate::task::{mark_current_stop, mark_current_suspend, run_next_task};
 
 pub fn sys_exit(exit_st: isize) -> ! {
     println!("[kernel] application exited with code {}", exit_st);
@@ -8,6 +8,6 @@ pub fn sys_exit(exit_st: isize) -> ! {
 }
 
 pub fn sys_yield() {
-    mark_current_stop();
+    mark_current_suspend();
     run_next_task();
 }

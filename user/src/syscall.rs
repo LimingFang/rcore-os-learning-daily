@@ -5,6 +5,10 @@ const SYSCALL_WRITE: usize = 64;
 const SYSCALL_YIELD: usize = 124;
 
 fn sys_call(syscall_id: usize, arg0: usize, arg1: usize, arg2: usize) -> isize {
+    // println!(
+    //     "syscall_id = {},arg0 = {},arg1 = {},arg2 = {}",
+    //     syscall_id, arg0, arg1, arg2
+    // );
     let mut ret;
     unsafe {
         asm!("ecall", inlateout("x10") arg0 => ret,in("x11") arg1,in("x12") arg2,in("x17") syscall_id);

@@ -34,8 +34,6 @@ __alltraps:
   call trap_handler
 
 __restore:
-  # 此时 a0 是内核栈指针
-  mv sp,a0
   # 先恢复 csr
   ld t0,32*8(sp)
   ld t1,33*8(sp)

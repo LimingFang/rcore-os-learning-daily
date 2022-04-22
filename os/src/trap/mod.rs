@@ -1,5 +1,5 @@
 mod trapctx;
-use crate::task::{run_next_app, APP_MANAGER};
+use crate::task::{mark_current_stop, run_next_task};
 use core::arch::global_asm;
 use riscv::register::{mtvec::TrapMode, stvec};
 use riscv::register::{
@@ -31,20 +31,15 @@ pub fn trap_handler(cx: &mut TrapCtx) -> &mut TrapCtx {
             cx.x[10] = syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
         }
         Trap::Exception(Exception::IllegalInstruction) => {
+            // 非法指令，停止当前任务对应的用户程序
             println!("trap {:?},stval = 0x{:x}", scause.cause(), stval);
-            {
-                let mut app_manager = APP_MANAGER.exclusive_access();
-                app_manager.move_to_next_app();
-            }
-            run_next_app();
+            mark_current_stop();
+            run_next_task();
         }
         Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::LoadFault) => {
             println!("trap {:?},stval = 0x{:x}", scause.cause(), stval);
-            {
-                let mut app_manager = APP_MANAGER.exclusive_access();
-                app_manager.move_to_next_app();
-            }
-            run_next_app();
+            mark_current_stop();
+            run_next_task();
         }
         _ => {
             panic!("Unsupport trap {:?},stval = 0x{:x}", scause.cause(), stval)

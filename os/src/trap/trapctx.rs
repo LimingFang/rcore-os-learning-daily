@@ -1,6 +1,7 @@
 use riscv::register::sstatus;
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct TrapCtx {
     pub x: [usize; 32],
     pub sstatus: sstatus::Sstatus,
@@ -25,6 +26,7 @@ impl TrapCtx {
             sepc: entry,
         };
         ctx.set_sp(sp);
+        // println!("{:?}", ctx);
         ctx
     }
 }
